@@ -1,1 +1,1 @@
-from data.iris import x_train, x_test, y_train, y_test
+from data.loader import x_train, x_test, y_train, y_test
