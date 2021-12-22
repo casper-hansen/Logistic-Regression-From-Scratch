@@ -24,8 +24,8 @@ class LogisticRegression():
             error = self.compute_gradients(x, y, pred)
             self.weights = self.weights + 0.1 * error
 
-            pred_class = [1 if p > 0.5 else 0 for p in pred]
-            self.train_accuracies.append(accuracy_score(y, pred_class))
+            pred_to_class = [1 if p > 0.5 else 0 for p in pred]
+            self.train_accuracies.append(accuracy_score(y, pred_to_class))
             self.losses.append(self.compute_loss(y, pred))
 
 
