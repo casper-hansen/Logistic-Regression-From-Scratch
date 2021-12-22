@@ -47,10 +47,10 @@ class LogisticRegression():
 
 
     def _sigmoid(self, x):
-        return np.array([self._sigmoid_deletegate(row) for row in x])
+        return np.array([self._sigmoid_function(value) for value in x])
 
 
-    def _sigmoid_deletegate(self, x):
+    def _sigmoid_function(self, x):
         # Thanks to http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
         if x >= 0:
             z = np.exp(-x)
