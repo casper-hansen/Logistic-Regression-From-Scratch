@@ -2,43 +2,47 @@ import copy
 import numpy as np
 from sklearn.metrics import accuracy_score
 
-# https://joparga3.github.io/standford_logistic_regression/
-# https://see.stanford.edu/materials/aimlcs229/cs229-notes1.pdf
-
 class LogisticRegression():
     def __init__(self):
-        pass
-
+        self.losses = []
+        self.train_accuracies = []
 
     def fit(self, x, y, epochs):
         x = self._transform_x(x)
         y = self._transform_y(y)
 
-        self.losses = []
-        self.train_accuracies = []
         self.weights = np.zeros(x.shape[1])
+        self.bias = 0.0001
 
         for i in range(epochs):
-            x_dot_weights = np.matmul(x, self.weights.transpose())
+            x_dot_weights = np.matmul(x, self.weights.transpose()) + self.bias
             pred = self._sigmoid(x_dot_weights)
-            error = self.compute_gradients(x, y, pred)
-            self.weights = self.weights + 0.1 * error
+            loss = self.compute_loss(y, pred)
+            error_w, error_b = self.compute_gradients(x, y, pred)
+            self.update_model_parameters(error_w, error_b)
 
             pred_to_class = [1 if p > 0.5 else 0 for p in pred]
             self.train_accuracies.append(accuracy_score(y, pred_to_class))
-            self.losses.append(self.compute_loss(y, pred))
-
-
-    def compute_gradients(self, x, y_true, y_pred):
-        gradients = np.matmul(x.transpose(), y_true - y_pred)
-        return np.array([np.mean(grad) for grad in gradients])
-
+            self.losses.append(loss)
 
     def compute_loss(self, y_true, y_pred):
+        # binary cross entropy
         y_zero_loss = y_true * np.log(y_pred + 1e-9)
         y_one_loss = (1-y_true) * np.log(1 - y_pred + 1e-9)
         return -np.mean(y_zero_loss + y_one_loss)
 
+    def compute_gradients(self, x, y_true, y_pred):
+        # derivative of binary cross entropy
+        difference =  y_pred - y_true
+        gradient_b = np.mean(difference)
+        gradients_w = np.matmul(x.transpose(), difference)
+        gradients_w = np.array([np.mean(grad) for grad in gradients_w])
+
+        return gradients_w, gradient_b
+
+    def update_model_parameters(self, error_w, error_b):
+        self.weights = self.weights - 0.1 * error_w
+        self.bias = self.bias - 0.1 * error_b
 
     def predict(self, x):
         x_dot_weights = np.matmul(x, self.weights.transpose())
@@ -51,7 +55,6 @@ class LogisticRegression():
 
 
     def _sigmoid_function(self, x):
-        # Thanks to http://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
         if x >= 0:
             z = np.exp(-x)
             return 1 / (1 + z)
