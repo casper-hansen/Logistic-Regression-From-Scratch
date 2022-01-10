@@ -49,10 +49,8 @@ class LogisticRegression():
         probabilities = self._sigmoid(x_dot_weights)
         return [1 if p > 0.5 else 0 for p in probabilities]
 
-
     def _sigmoid(self, x):
         return np.array([self._sigmoid_function(value) for value in x])
-
 
     def _sigmoid_function(self, x):
         if x >= 0:
@@ -62,11 +60,9 @@ class LogisticRegression():
             z = np.exp(x)
             return z / (1 + z)
 
-
     def _transform_x(self, x):
         x = copy.deepcopy(x)
         return x.values
-
 
     def _transform_y(self, y):
         y = copy.deepcopy(y)
