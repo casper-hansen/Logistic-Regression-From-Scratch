@@ -12,10 +12,10 @@ class LogisticRegression():
         y = self._transform_y(y)
 
         self.weights = np.zeros(x.shape[1])
-        self.bias = 0.0001
+        self.bias = 0
 
         for i in range(epochs):
-            x_dot_weights = np.matmul(x, self.weights.transpose()) + self.bias
+            x_dot_weights = np.matmul(self.weights, x.transpose()) + self.bias
             pred = self._sigmoid(x_dot_weights)
             loss = self.compute_loss(y, pred)
             error_w, error_b = self.compute_gradients(x, y, pred)
