@@ -31,7 +31,7 @@ $$
 We can visualize the sigmoid function by the following graph:
 
 ![](images/sigmoid.png)
-Sigmoid graph, showing how our input (x-axis) turns into an output between 0 and 1 (y-axis).
+<center>Sigmoid graph, showing how our input (x-axis) turns into an output between 0 and 1 (y-axis).</center><br>
 
 Once we have the prediction, we can apply the basic gradient descent algorithm to optimize our model parameters, which are the weights and bias in this case. We will not be using stochastic or mini-batch gradient descent in this article, but you can use reference [1] to see how these algorithms are implemented in a slightly different way.
 
@@ -71,7 +71,128 @@ Now we will see all of this in action in Python code with the help of NumPy for 
 
 ## Python Example
 
+Load dataset
 
+```python
+import pandas as pd
+from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_breast_cancer
+
+def sklearn_to_df(data_loader):
+    X_data = data_loader.data
+    X_columns = data_loader.feature_names
+    x = pd.DataFrame(X_data, columns=X_columns)
+
+    y_data = data_loader.target
+    y = pd.Series(y_data, name='target')
+
+    return x, y
+
+x, y = sklearn_to_df(load_breast_cancer())
+
+x_train, x_test, y_train, y_test = train_test_split(
+    x, y, test_size=0.2, random_state=42)
+```
+
+Create model and fit
+
+```python
+from sklearn.metrics import accuracy_score
+from sklearn.linear_model import LogisticRegression
+from logistic_regression import LogisticRegression as CustomLogisticRegression
+from data import x_train, x_test, y_train, y_test
+
+lr = CustomLogisticRegression()
+lr.fit(x_train, y_train, epochs=150)
+```
+
+The fit method
+
+```python
+def fit(self, x, y, epochs):
+    x = self._transform_x(x)
+    y = self._transform_y(y)
+
+    self.weights = np.zeros(x.shape[1])
+    self.bias = 0
+
+    for i in range(epochs):
+        x_dot_weights = np.matmul(self.weights, x.transpose()) + self.bias
+        pred = self._sigmoid(x_dot_weights)
+        loss = self.compute_loss(y, pred)
+        error_w, error_b = self.compute_gradients(x, y, pred)
+        self.update_model_parameters(error_w, error_b)
+
+        pred_to_class = [1 if p > 0.5 else 0 for p in pred]
+        self.train_accuracies.append(accuracy_score(y, pred_to_class))
+        self.losses.append(loss)
+```
+
+Sigmoid function
+
+```python
+def _sigmoid(self, x):
+    return np.array([self._sigmoid_function(value) for value in x])
+
+def _sigmoid_function(self, x):
+    if x >= 0:
+        z = np.exp(-x)
+        return 1 / (1 + z)
+    else:
+        z = np.exp(x)
+        return z / (1 + z)
+```
+
+Loss function
+
+```python
+def compute_loss(self, y_true, y_pred):
+    # binary cross entropy
+    y_zero_loss = y_true * np.log(y_pred + 1e-9)
+    y_one_loss = (1-y_true) * np.log(1 - y_pred + 1e-9)
+    return -np.mean(y_zero_loss + y_one_loss)
+```
+
+Loss function derivative to get gradients
+
+```python
+def compute_gradients(self, x, y_true, y_pred):
+    # derivative of binary cross entropy
+    difference =  y_pred - y_true
+    gradient_b = np.mean(difference)
+    gradients_w = np.matmul(x.transpose(), difference)
+    gradients_w = np.array([np.mean(grad) for grad in gradients_w])
+
+    return gradients_w, gradient_b
+```
+
+Updating model parameters
+
+```python
+def update_model_parameters(self, error_w, error_b):
+    self.weights = self.weights - 0.1 * error_w
+    self.bias = self.bias - 0.1 * error_b
+```
+
+After fitting is done, we can use the predict function and generate an accuracy score
+
+```python
+pred = lr.predict(x_test)
+accuracy = accuracy_score(y_test, pred)
+print(accuracy)
+```
+
+After getting our accuracy score, we compare with the logistic regression model from the scikit-learn library.
+
+```python
+model = LogisticRegression(solver='newton-cg', max_iter=150)
+model.fit(x_train, y_train)
+pred2 = model.predict(x_test)
+accuracy2 = accuracy_score(y_test, pred2)
+print(accuracy2)
+```
+
+We find that the accuracy is almost equal.
 
 ## Conclusion
 
