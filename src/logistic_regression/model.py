@@ -45,7 +45,7 @@ class LogisticRegression():
         self.bias = self.bias - 0.1 * error_b
 
     def predict(self, x):
-        x_dot_weights = np.matmul(x, self.weights.transpose())
+        x_dot_weights = np.matmul(x, self.weights.transpose()) + self.bias
         probabilities = self._sigmoid(x_dot_weights)
         return [1 if p > 0.5 else 0 for p in probabilities]
 
